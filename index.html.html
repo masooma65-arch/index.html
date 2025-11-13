@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dino Image Game</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+  }
+
+  .game-container {
+    position: relative;
+    width: 800px;
+    height: 300px;
+    border: 2px solid #333;
+    background: linear-gradient(to top, #cce0ff 50%, #87ceeb 50%);
+    overflow: hidden;
+  }
+
+  /* Ground */
+  .ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    background-color: #654321;
+  }
+
+  /* Dino */
+  #dino {
+    position: absolute;
+    bottom: 40px;
+    left: 50px;
+    width: 70px;
+    height: 70px;
+  }
+
+  /* Obstacle (stone) */
+  #stone {
+    position: absolute;
+    bottom: 40px;
+    right: -80px;
+    width: 60px;
+    height: 50px;
+  }
+
+  /* Score */
+  #score {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  /* Game Over text */
+  #gameOver {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    color: red;
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    .game-container {
+      width: 95%;
+      height: 250px;
+    }
+    #dino {
+      width: 50px;
+      height: 50px;
+    }
+    #stone {
+      width: 40px;
+      height: 35px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="game-container">
+    <img src="width_350.png" id="dino" alt="Dino">
+    <img src="2 - Edited.png" id="stone" alt="Stone">
+    <div class="ground"></div>
+    <div id="score">Score: 0</div>
+    <div id="gameOver">Game Over</div>
+  </div>
+
+  <script>
+    const dino = document.getElementById("dino");
+    const stone = document.getElementById("stone");
+    const gameOverText = document.getElementById("gameOver");
+    const scoreText = document.getElementById("score");
+
+    let isJumping = false;
+    let isGameOver = false;
+    let score = 0;
+
+    document.addEventListener("keydown", (event) => {
+      if (event.code === "Space" && !isJumping && !isGameOver) {
+        jump();
+      } else if (event.code === "Space" && isGameOver) {
+        restartGame();
+      }
+    });
+
+    function jump() {
+      isJumping = true;
+      let position = 0;
+      const up = setInterval(() => {
+        if (position >= 120) {
+          clearInterval(up);
+          const down = setInterval(() => {
+            if (position <= 0) {
+              clearInterval(down);
+              isJumping = false;
+            }
+            position -= 5;
+            dino.style.bottom = 40 + position + "px";
+          }, 20);
+        }
+        position += 5;
+        dino.style.bottom = 40 + position + "px";
+      }, 20);
+    }
+
+    function moveStone() {
+      let stonePosition = 800;
+      stone.style.left = stonePosition + "px";
+
+      const moveInterval = setInterval(() => {
+        if (isGameOver) {
+          clearInterval(moveInterval);
+          return;
+        }
+
+        stonePosition -= 5;
+        stone.style.left = stonePosition + "px";
+
+        const dinoBottom = parseInt(window.getComputedStyle(dino).bottom);
+        if (stonePosition > 50 && stonePosition < 100 && dinoBottom < 80) {
+          endGame();
+          clearInterval(moveInterval);
+        }
+
+        if (stonePosition === 45) {
+          score++;
+          scoreText.textContent = "Score: " + score;
+        }
+
+        if (stonePosition < -80) {
+          stonePosition = 800;
+        }
+      }, 20);
+    }
+
+    function endGame() {
+      isGameOver = true;
+      gameOverText.style.display = "block";
+    }
+
+    function restartGame() {
+      isGameOver = false;
+      gameOverText.style.display = "none";
+      score = 0;
+      scoreText.textContent = "Score: 0";
+      moveStone();
+    }
+
+    moveStone();
+  </script>
+</body>
+</html>
